@@ -1,0 +1,6 @@
+testCaseId,description,hour,minute,days,expectedResult
+A-F-14-TC01,Tạo nhắc nhở với thời gian và ngày hợp lệ,8,0,MONDAY;WEDNESDAY;FRIDAY,SUCCESS
+A-F-14-TC02,Tạo nhắc nhở khi không chọn ngày nào,8,0,,FAIL_NO_DAY
+A-F-14-TC03,Tạo nhắc nhở cho tất cả 7 ngày,8,0,MONDAY;TUESDAY;WEDNESDAY;THURSDAY;FRIDAY;SATURDAY;SUNDAY,SUCCESS
+A-F-14-TC04,Tạo nhắc nhở vào lúc nửa đêm,0,0,MONDAY,SUCCESS_MIDNIGHT
+A-F-14-TC05,Tạo nhắc nhở từ menu cá nhân,10,0,EVERYDAY,SUCCESS

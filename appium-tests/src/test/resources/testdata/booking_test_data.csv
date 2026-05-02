@@ -1,0 +1,8 @@
+testCaseId,description,bookingName,bookingPhone,patientName,gender,birthday,address,reason,appointmentDate,appointmentTime,serviceId,expectedResult
+A-F-07-TC01,Tạo lịch hẹn với ngày tương lai hợp lệ,Nam,0375158622,Nam,1,2004-11-25,Hà Nội,đau bụng,TOMORROW,10:00,1,SUCCESS
+A-F-07-TC02,Tạo lịch hẹn với ngày trong quá khứ,Nam,0375158622,Nam,1,2004-11-25,Hà Nội,đau đầu,YESTERDAY,10:00,1,FAIL_PAST_DATE
+A-F-07-TC03,Tạo lịch hẹn với ngày hôm nay giờ quá khứ,Nam,0375158622,Nam,1,2004-11-25,Hà Nội,đau,TODAY,01:00,1,FAIL_PAST_TIME
+A-F-07-TC05,Tạo lịch hẹn với lý do khám trống,Nam,0375158622,Nam,1,2004-11-25,Hà Nội,,TOMORROW,10:00,1,FAIL_EMPTY_REASON
+A-F-07-TC06,Tạo lịch hẹn bỏ trống tên người đặt,,0375158622,Nam,1,2004-11-25,Hà Nội,đau,TOMORROW,10:00,1,FAIL_MANDATORY
+A-F-07-TC07,Tạo lịch hẹn bỏ trống SĐT,Nam,,Nam,1,2004-11-25,Hà Nội,đau,TOMORROW,10:00,1,FAIL_MANDATORY
+A-F-07-TC08,Tạo lịch hẹn bỏ trống tên bệnh nhân,Nam,0375158622,,1,2004-11-25,Hà Nội,đau,TOMORROW,10:00,1,FAIL_MANDATORY
