@@ -1,7 +1,0 @@
-testCaseId,description,searchKeyword,filterType,expectedResult
-A-F-15-TC01,Tìm kiếm theo tên bác sĩ hợp lệ,Nguyễn,doctor,HAS_RESULTS
-A-F-15-TC02,Tìm kiếm theo chuyên khoa,Tim mạch,speciality,HAS_RESULTS
-A-F-15-TC03,Tìm kiếm không có kết quả,zzz_khongton,service,NO_RESULTS
-A-F-15-TC04,Tìm kiếm với chuỗi rỗng,,service,SHOW_ALL
-A-F-15-TC05,Tìm kiếm với một ký tự,N,doctor,HAS_RESULTS_OR_PROMPT
-A-F-15-TC06,Tìm kiếm với ký tự đặc biệt / XSS,<script>alert(1)</script>,service,SANITIZED_NO_XSS
