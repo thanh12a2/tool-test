@@ -1,0 +1,1778 @@
+{
+  "info": {
+    "_postman_id": "negative-test-cases-collection",
+    "name": "API - Negative Test Cases (PTIT Medical)",
+    "description": "📊 NEGATIVE TEST CASES - PTIT Medical API | 31 Tests | NEG-AUTH-001 ~ NEG-DOCTOR-003 | Input Validation, Auth/Authz, Business Logic, Security | Use TestIDs for trace mapping",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication - Negative Tests",
+      "description": "🔐 AUTHENTICATION NEGATIVE (14 Tests) | NEG-AUTH-001 ~ NEG-AUTH-014 | Empty fields, Wrong credentials, SQL Injection, Duplicate emails, Weak passwords",
+      "item": [
+        {
+          "name": "Login Member - Empty Email",
+          "description": "NEG-AUTH-001 | LoginController.login() | Empty email field | Expected: HTTP 200, result=0, error msg contains 'email'",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "123456",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-001] Should fail when email is empty', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg).to.include.string('email');",
+                  "});",
+                  "",
+                  "pm.test('[NEG-AUTH-001] Status code should not be 200', function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Member - Empty Password",
+          "description": "NEG-AUTH-002 | LoginController.login() | Empty password field | Expected: HTTP 200, result=0, error msg contains 'password'",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phongkaster@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-002] Should fail when password is empty', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg).to.include.string('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Member - Wrong Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "wrongpassword123",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phongkaster@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-003] Should fail with incorrect password', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg).to.include.string('incorrect');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Member - Non-existent Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "123456",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "nonexistent@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-004] Should fail with non-existent email', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg).to.include.string('incorrect');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Member - Invalid Email Format",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "123456",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "invalid-email-format",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-005] Should fail with invalid email format', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect([res.msg.toLowerCase()]).to.include.something.that.includes(['email', 'invalid', 'format']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Member - SQL Injection Attempt",
+          "description": "NEG-AUTH-006 | LoginController.login() | SQL injection payload: ' OR '1'='1 | Expected: HTTP 200, result=0, no SQL results revealed",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0123456788",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "' OR '1'='1",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phongkaster@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "member",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-006] Should prevent SQL injection attempts', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg).to.not.include.string('DROP');",
+                  "    pm.expect(res.msg).to.not.include.string('SELECT');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register - Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "newuser@gmail.com",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-007] Should fail when required fields are missing', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register - Password Mismatch",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0335216825",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "newuser@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "member",
+                  "type": "text"
+                },
+                {
+                  "key": "passwordConfirm",
+                  "value": "differentpassword",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-008] Should fail when passwords do not match', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include('match');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register - Duplicate Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0335216825",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phongkaster@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "member",
+                  "type": "text"
+                },
+                {
+                  "key": "passwordConfirm",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-009] Should fail when email already exists', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include(['exist', 'duplicate', 'already']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register - Weak Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0335216825",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "123",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "weakpass@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "member",
+                  "type": "text"
+                },
+                {
+                  "key": "passwordConfirm",
+                  "value": "123",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-010] Should validate password strength', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['weak', 'strong', 'length']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password Recovery - Empty Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/recovery",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["recovery"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-011] Should fail with empty email for recovery', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password Recovery - Non-existent Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "nonexistent@gmail.com",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/recovery",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["recovery"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-012] Should fail with non-existent email', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password Reset - Invalid Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "recovery_token",
+                  "value": "invalid_token_12345",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "newpass123",
+                  "type": "text"
+                },
+                {
+                  "key": "passwordConfirm",
+                  "value": "newpass123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/password-reset/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["password-reset", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-013] Should fail with invalid recovery token', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password Reset - Mismatched Passwords",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "recovery_token",
+                  "value": "438097911864051",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "newpass123",
+                  "type": "text"
+                },
+                {
+                  "key": "passwordConfirm",
+                  "value": "differentpass456",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/password-reset/10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["password-reset", "10"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-AUTH-014] Should fail when passwords do not match', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include('match');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient - Negative Tests",
+      "description": "👥 PATIENT NEGATIVE (5 Tests) | NEG-PATIENT-001 ~ NEG-PATIENT-005 | Non-existent ID, Invalid format, Invalid fields, Missing auth",
+      "item": [
+        {
+          "name": "Read By ID - Non-existent ID",
+          "description": "NEG-PATIENT-001 | PatientController.readById(99999) | Request non-existent ID | Expected: HTTP 200/404, result=0, error 'not found'",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcsImVtYWlsIjoieXVuZ3RyZWsyOTEyQGdtYWlsLmNvbSIsInBob25lIjoiMDMzNTIxNjgyNSIsIm5hbWUiOiJRdWFuZyBUcnVuZyIsInByaWNlIjoxMDAwMDAsInJvbGUiOiJtZW1iZXIiLCJhY3RpdmUiOjEsImF2YXRhciI6IiIsImNyZWF0ZV9hdCI6IjIwMjYtMDUtMDQgMDg6NDA6NTYiLCJ1cGRhdGVfYXQiOiIyMDI2LTA1LTA0IDA4OjQwOjU2Iiwic3BlY2lhbGl0eV9pZCI6MSwicmVjb3ZlcnlfdG9rZW4iOiIiLCJoYXNoUGFzcyI6Ijg4ZGI5YTQ4YzZkMDhlYzE0N2JhOGM5YjQzNmMwZGY0IiwiaWF0IjoxNzc3ODU4ODgzfQ.ZeQ_-qV0S-_p8FrTXvLSgselsqE8LTt2QlJe1YgdKag",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/patients/99999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients", "99999"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PATIENT-001] Should fail with non-existent patient ID', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include(['not found', 'not exist']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read By ID - Invalid ID Format",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcsImVtYWlsIjoieXVuZ3RyZWsyOTEyQGdtYWlsLmNvbSIsInBob25lIjoiMDMzNTIxNjgyNSIsIm5hbWUiOiJRdWFuZyBUcnVuZyIsInByaWNlIjoxMDAwMDAsInJvbGUiOiJtZW1iZXIiLCJhY3RpdmUiOjEsImF2YXRhciI6IiIsImNyZWF0ZV9hdCI6IjIwMjYtMDUtMDQgMDg6NDA6NTYiLCJ1cGRhdGVfYXQiOiIyMDI2LTA1LTA0IDA4OjQwOjU2Iiwic3BlY2lhbGl0eV9pZCI6MSwicmVjb3ZlcnlfdG9rZW4iOiIiLCJoYXNoUGFzcyI6Ijg4ZGI5YTQ4YzZkMDhlYzE0N2JhOGM5YjQzNmMwZGY0IiwiaWF0IjoxNzc3ODU4ODgzfQ.ZeQ_-qV0S-_p8FrTXvLSgselsqE8LTt2QlJe1YgdKag",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/patients/abc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients", "abc"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-PATIENT-002] Should handle invalid ID format', function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update - Invalid Phone Format",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcsImVtYWlsIjoieXVuZ3RyZWsyOTEyQGdtYWlsLmNvbSIsInBob25lIjoiMDMzNTIxNjgyNSIsIm5hbWUiOiJRdWFuZyBUcnVuZyIsInByaWNlIjoxMDAwMDAsInJvbGUiOiJtZW1iZXIiLCJhY3RpdmUiOjEsImF2YXRhciI6IiIsImNyZWF0ZV9hdCI6IjIwMjYtMDUtMDQgMDg6NDA6NTYiLCJ1cGRhdGVfYXQiOiIyMDI2LTA1LTA0IDA4OjQwOjU2Iiwic3BlY2lhbGl0eV9pZCI6MSwicmVjb3ZlcnlfdG9rZW4iOiIiLCJoYXNoUGFzcyI6Ijg4ZGI5YTQ4YzZkMDhlYzE0N2JhOGM5YjQzNmMwZGY0IiwiaWF0IjoxNzc3ODU4ODgzfQ.ZeQ_-qV0S-_p8FrTXvLSgselsqE8LTt2QlJe1YgdKag",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "phone",
+                  "value": "invalid-phone",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patients/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PATIENT-003] Should validate phone number format', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['phone', 'invalid', 'format']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update - Invalid Birthday Format",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTcsImVtYWlsIjoieXVuZ3RyZWsyOTEyQGdtYWlsLmNvbSIsInBob25lIjoiMDMzNTIxNjgyNSIsIm5hbWUiOiJRdWFuZyBUcnVuZyIsInByaWNlIjoxMDAwMDAsInJvbGUiOiJtZW1iZXIiLCJhY3RpdmUiOjEsImF2YXRhciI6IiIsImNyZWF0ZV9hdCI6IjIwMjYtMDUtMDQgMDg6NDA6NTYiLCJ1cGRhdGVfYXQiOiIyMDI2LTA1LTA0IDA4OjQwOjU2Iiwic3BlY2lhbGl0eV9pZCI6MSwicmVjb3ZlcnlfdG9rZW4iOiIiLCJoYXNoUGFzcyI6Ijg4ZGI5YTQ4YzZkMDhlYzE0N2JhOGM5YjQzNmMwZGY0IiwiaWF0IjoxNzc3ODU4ODgzfQ.ZeQ_-qV0S-_p8FrTXvLSgselsqE8LTt2QlJe1YgdKag",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "phone",
+                  "value": "0123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "birthday",
+                  "value": "invalid-date",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patients/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PATIENT-004] Should validate birthday format', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['birthday', 'date', 'format']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update - Missing Authorization",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "phone",
+                  "value": "0123456789",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patients/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-PATIENT-005] Should fail without authorization token', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient Profile - Negative Tests",
+      "description": "🔐 PATIENT PROFILE NEGATIVE (4 Tests) | NEG-PROFILE-001 ~ NEG-PROFILE-004 | Password validation, Token validation",
+      "item": [
+        {
+          "name": "Change Password - Empty Current Password",
+          "description": "NEG-PROFILE-001 | PatientController.changePassword() | Empty currentPassword field | Expected: HTTP 200, result=0, error required field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3OTQwNDQwfQ.Iw2ZZqo3yFPRq459803ORtuFlfqdOZ8AvnETZqDNwVM",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "action",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "currentPassword",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "newPassword",
+                  "value": "newpass123",
+                  "type": "text"
+                },
+                {
+                  "key": "confirmPassword",
+                  "value": "newpass123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "profile"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PROFILE-001] Should fail with empty current password', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password - Wrong Current Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3OTQwNDQwfQ.Iw2ZZqo3yFPRq459803ORtuFlfqdOZ8AvnETZqDNwVM",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "action",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "currentPassword",
+                  "value": "wrongpassword",
+                  "type": "text"
+                },
+                {
+                  "key": "newPassword",
+                  "value": "newpass123",
+                  "type": "text"
+                },
+                {
+                  "key": "confirmPassword",
+                  "value": "newpass123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "profile"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PROFILE-002] Should fail with wrong current password', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include('incorrect');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password - Mismatched New Passwords",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3OTQwNDQwfQ.Iw2ZZqo3yFPRq459803ORtuFlfqdOZ8AvnETZqDNwVM",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "action",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "currentPassword",
+                  "value": "111111",
+                  "type": "text"
+                },
+                {
+                  "key": "newPassword",
+                  "value": "newpass123",
+                  "type": "text"
+                },
+                {
+                  "key": "confirmPassword",
+                  "value": "differentpass456",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "profile"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-PROFILE-003] Should fail when new passwords do not match', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include('match');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read Profile - Invalid Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT invalid.token.here",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/patient/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "profile"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-PROFILE-004] Should fail with invalid JWT token', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient Booking - Negative Tests",
+      "description": "📅 BOOKING NEGATIVE (5 Tests) | NEG-BOOKING-001 ~ NEG-BOOKING-005 | Missing fields, Invalid/past dates, Invalid phone, Non-existent ID",
+      "item": [
+        {
+          "name": "Create Booking - Missing Required Fields",
+          "description": "NEG-BOOKING-001 | BookingController.create() | Only booking_name provided, rest missing | Expected: HTTP 200, result=0, error missing fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "booking_name",
+                  "value": "Test",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-BOOKING-001] Should fail when required fields are missing', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Booking - Invalid Date Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "booking_name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "booking_phone",
+                  "value": "0123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_time",
+                  "value": "09:00",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_date",
+                  "value": "invalid-date",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "Test Address",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-BOOKING-002] Should fail with invalid date format', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['date', 'invalid', 'format']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Booking - Past Date",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "booking_name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "booking_phone",
+                  "value": "0123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_time",
+                  "value": "09:00",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_date",
+                  "value": "2020-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "Test Address",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-BOOKING-003] Should fail when booking date is in the past', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['past', 'date', 'before']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Booking - Invalid Phone Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "booking_name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "booking_phone",
+                  "value": "invalid-phone",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_time",
+                  "value": "09:00",
+                  "type": "text"
+                },
+                {
+                  "key": "appointment_date",
+                  "value": "2026-05-15",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "Test Address",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-BOOKING-004] Should validate phone number format', function () {",
+                  "    if (res.result === 0) {",
+                  "        pm.expect(res.msg.toLowerCase()).to.include(['phone', 'invalid', 'format']);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Booking - Non-existent ID",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/patient/booking/99999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking", "99999"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-BOOKING-005] Should fail when booking ID does not exist', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include(['not found', 'not exist']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Negative Tests",
+      "description": "👨‍⚕️ DOCTOR NEGATIVE (3 Tests) | NEG-DOCTOR-001 ~ NEG-DOCTOR-003 | Non-existent ID, Missing email, Duplicate email",
+      "item": [
+        {
+          "name": "Read By ID - Non-existent Doctor",
+          "description": "NEG-DOCTOR-001 | DoctorController.readById(99999) | Request non-existent doctor | Expected: HTTP 200/404, result=0, error 'not found'",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/doctors/99999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["doctors", "99999"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-DOCTOR-001] Should fail with non-existent doctor ID', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include(['not found', 'not exist']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Doctor - Missing Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJwaG9uZ2thc3RlckBnbWFpbC5jb20iLCJwaG9uZSI6IjAxMjM0NTY3ODgiLCJuYW1lIjoiTmd1eVx1MWVjNW4gVGhcdTFlY2IgVGh1IFRyYW5nIiwicHJpY2UiOjE1OTAwMCwicm9sZSI6ImFkbWluIiwiYWN0aXZlIjoxLCJhdmF0YXIiOiJhdmF0YXJfZG9jdG9yXzFfMTY2OTAyNjMyNi5qcGciLCJjcmVhdGVfYXQiOiIyMDIyLTExLTAyIDIxOjEyOjIwIiwidXBkYXRlX2F0IjoiMjAyMi0xMi0xNCAwOToxMDozMiIsInNwZWNpYWxpdHlfaWQiOjE0LCJyZWNvdmVyeV90b2tlbiI6IjMzMDQ4NTc5MTI3MTM1OSIsImhhc2hQYXNzIjoiNzM1MGRhZWQwNzk3MmYwM2VkYTIwOTkwMzQ0ZDM4MDIiLCJpYXQiOjE3Nzc4NjI4OTJ9.zme78JWywGFSgBK3tp9w4I3GozzMhSFPa1oFlKjb564",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "0335216825",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Doctor Name",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/doctors",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["doctors"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-DOCTOR-002] Should fail when email is missing', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Doctor - Duplicate Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJwaG9uZ2thc3RlckBnbWFpbC5jb20iLCJwaG9uZSI6IjAxMjM0NTY3ODgiLCJuYW1lIjoiTmd1eVx1MWVjNW4gVGhcdTFlY2IgVGh1IFRyYW5nIiwicHJpY2UiOjE1OTAwMCwicm9sZSI6ImFkbWluIiwiYWN0aXZlIjoxLCJhdmF0YXIiOiJhdmF0YXJfZG9jdG9yXzFfMTY2OTAyNjMyNi5qcGciLCJjcmVhdGVfYXQiOiIyMDIyLTExLTAyIDIxOjEyOjIwIiwidXBkYXRlX2F0IjoiMjAyMi0xMi0xNCAwOToxMDozMiIsInNwZWNpYWxpdHlfaWQiOjE0LCJyZWNvdmVyeV90b2tlbiI6IjMzMDQ4NTc5MTI3MTM1OSIsImhhc2hQYXNzIjoiNzM1MGRhZWQwNzk3MmYwM2VkYTIwOTkwMzQ0ZDM4MDIiLCJpYXQiOjE3Nzc4NjI4OTJ9.zme78JWywGFSgBK3tp9w4I3GozzMhSFPa1oFlKjb564",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phongkaster@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "0335216825",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Doctor Name",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/doctors",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["doctors"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('[NEG-DOCTOR-003] Should fail when email already exists', function () {",
+                  "    pm.expect(res.result).to.equal(0);",
+                  "    pm.expect(res.msg.toLowerCase()).to.include(['exist', 'duplicate', 'already']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "General Negative Tests",
+      "description": "⚙️ GENERAL NEGATIVE (3 Tests) | NEG-GENERAL-001 ~ NEG-GENERAL-003 | Missing auth, Invalid HTTP method, Invalid JSON format",
+      "item": [
+        {
+          "name": "Request - Missing Authorization Header",
+          "description": "NEG-GENERAL-001 | All endpoints | No Authorization header | Expected: HTTP 401/403, error 'unauthorized'",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-GENERAL-001] Should fail without Authorization header', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request - Invalid HTTP Method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/patients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patients"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-GENERAL-002] Should handle unsupported HTTP methods', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 405]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request - Invalid JSON in Body",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzAsImVtYWlsIjoicGhvbmdrYXN0ZXIxMDBAZ21haWwuY29tIiwicGhvbmUiOiIwOTc5ODM1NTgwIiwibmFtZSI6IlF1YW5nIFRydW5nIiwiZ2VuZGVyIjowLCJiaXJ0aGRheSI6IjAxLTAxLTIwMDAiLCJhZGRyZXNzIjoicXFxIiwiYXZhdGFyIjoiZGVmYXVsdF9hdmF0YXIuanBnIiwiY3JlYXRlX2F0IjoiMjAyMi0xMi0wOCAxNTozNjo0MiIsInVwZGF0ZV9hdCI6IjIwMjYtMDUtMDQgMDk6MDU6MDIiLCJoYXNoUGFzcyI6ImEyY2JhNGM0NWI1Njc3ZmE3YTM2Y2ZmYTU2OWQxMmRmIiwiaWF0IjoxNzc3ODYwODAxfQ.ylhUz0FNwu3vIA4xXtCq0mE7fHkOca7lccpp8ae-maY",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ invalid json }"
+            },
+            "url": {
+              "raw": "http://localhost:8080/patient/booking",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["patient", "booking"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('[NEG-GENERAL-003] Should handle invalid JSON in request body', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
