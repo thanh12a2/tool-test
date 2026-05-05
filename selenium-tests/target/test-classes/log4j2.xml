@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="log.path">./logs</Property>
+        <Property name="log.level">INFO</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5p] %c{1} - %m%n" />
+        </Console>
+
+        <!-- File Appender -->
+        <File name="File" fileName="${log.path}/test-execution.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5p] %c{1} - %m%n" />
+        </File>
+
+        <!-- Rolling File Appender -->
+        <RollingFile name="RollingFile" fileName="${log.path}/test-execution.log" 
+                     filePattern="${log.path}/test-execution-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5p] %c{1} - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="${log.level}">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="RollingFile" />
+        </Root>
+
+        <!-- Specific loggers -->
+        <Logger name="com.umbrella" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="RollingFile" />
+        </Logger>
+
+        <Logger name="org.openqa.selenium" level="WARN" />
+        <Logger name="org.apache.http" level="WARN" />
+    </Loggers>
+</Configuration>
