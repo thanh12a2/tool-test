@@ -1,8 +1,0 @@
-testCaseId,description,phoneNumber,otp,expectedResult,expectedMessage
-A-F-01-TC01,Đăng nhập bằng OTP hợp lệ,901234567,VALID_OTP,SUCCESS,Đăng nhập thành công
-A-F-01-TC02,Đăng nhập với OTP sai,901234567,999999,FAIL,OTP không hợp lệ
-A-F-01-TC06,Đăng nhập khi bỏ trống số điện thoại,,N/A,FAIL,Số điện thoại là bắt buộc
-A-F-01-TC07,Đăng nhập với số điện thoại sai định dạng,abcdef,N/A,FAIL,Số điện thoại không hợp lệ
-A-F-01-TC07b,Đăng nhập với SĐT quá dài,09012345678901,N/A,FAIL,Số điện thoại không hợp lệ
-A-F-01-TC07c,Đăng nhập với SĐT chỉ 1 chữ số,9,N/A,FAIL,Số điện thoại không hợp lệ
-A-F-01-TC07d,Đăng nhập với SĐT chứa ký tự đặc biệt,!@#$%^,N/A,FAIL,Số điện thoại không hợp lệ
