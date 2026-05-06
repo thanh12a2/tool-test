@@ -1,0 +1,1066 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║         JMETER PERFORMANCE TEST PLAN — WEB (PHP)                           ║
+  ║         Hệ thống Hỗ trợ Đặt lịch & Điều trị Y tế — PTIT                   ║
+  ║         Target URL : http://192.168.1.9:80/PTIT-Do-An-Tot-Nghiep           ║
+  ║         Created    : 2026-05-06                                             ║
+  ║         Scope      : Web UI / REST API (admin & doctor roles)               ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+
+  MỤC ĐÍCH TỔNG QUAN:
+  File này kiểm tra hiệu năng của toàn bộ luồng Web (PHP backend).
+  Bao gồm: Đăng nhập, Dashboard, Quản lý Chuyên khoa, Bác sĩ,
+  Bệnh nhân, Phòng khám, Lịch hẹn, Lịch khám, Phác đồ điều trị.
+
+  CÁC NHÓM TEST (Thread Groups):
+    TG-01  Đăng nhập đồng thời               (30 users, ramp 10s)
+    TG-02  Tải trang Dashboard & danh sách   (20 users, ramp 20s)
+    TG-03  Quản lý Chuyên khoa (CRUD)        (10 users, ramp 10s)
+    TG-04  Quản lý Bác sĩ (CRUD + Search)   (10 users, ramp 10s)
+    TG-05  Quản lý Bệnh nhân & Phòng khám   (10 users, ramp 10s)
+    TG-06  Luồng đặt lịch + Lịch khám       (15 users, ramp 15s)
+-->
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+
+    <!-- ═══════════════ TEST PLAN ROOT ═══════════════ -->
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan"
+              testname="[WEB] PTIT Medical System – Performance Test Plan"
+              enabled="true">
+      <stringProp name="TestPlan.comments">
+        Kế hoạch kiểm thử hiệu năng phía WEB cho hệ thống y tế PTIT.
+        Chạy với JMeter 5.x. Đảm bảo server đang chạy tại 192.168.1.9:80
+        trước khi thực thi.
+      </stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables"
+                   elementType="Arguments" guiclass="ArgumentsPanel"
+                   testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <!-- Biến toàn cục dùng chung cho toàn bộ test plan -->
+          <elementProp name="BASE_URL" elementType="Argument">
+            <stringProp name="Argument.name">BASE_URL</stringProp>
+            <stringProp name="Argument.value">192.168.1.9</stringProp>
+            <stringProp name="Argument.desc">IP server web</stringProp>
+          </elementProp>
+          <elementProp name="BASE_PORT" elementType="Argument">
+            <stringProp name="Argument.name">BASE_PORT</stringProp>
+            <stringProp name="Argument.value">80</stringProp>
+            <stringProp name="Argument.desc">Port server web</stringProp>
+          </elementProp>
+          <elementProp name="BASE_PATH" elementType="Argument">
+            <stringProp name="Argument.name">BASE_PATH</stringProp>
+            <stringProp name="Argument.value">/PTIT-Do-An-Tot-Nghiep</stringProp>
+            <stringProp name="Argument.desc">Context path của ứng dụng</stringProp>
+          </elementProp>
+          <elementProp name="ADMIN_EMAIL" elementType="Argument">
+            <stringProp name="Argument.name">ADMIN_EMAIL</stringProp>
+            <stringProp name="Argument.value">phongkaster@gmail.com</stringProp>
+            <stringProp name="Argument.desc">Email tài khoản admin dùng để test</stringProp>
+          </elementProp>
+          <elementProp name="ADMIN_PASSWORD" elementType="Argument">
+            <stringProp name="Argument.name">ADMIN_PASSWORD</stringProp>
+            <stringProp name="Argument.value">123456</stringProp>
+            <stringProp name="Argument.desc">Mật khẩu tài khoản admin</stringProp>
+          </elementProp>
+          <elementProp name="DOCTOR_EMAIL" elementType="Argument">
+            <stringProp name="Argument.name">DOCTOR_EMAIL</stringProp>
+            <stringProp name="Argument.value">wgnam2k4@gmail.com</stringProp>
+            <stringProp name="Argument.desc">Email tài khoản bác sĩ dùng để test</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+
+    <hashTree>
+
+      <!-- ══════════════════════════════════════════════════════
+           HTTP DEFAULT CONFIG – áp dụng toàn plan
+           ══════════════════════════════════════════════════════ -->
+      <ConfigTestElement guiclass="HttpDefaultsGui"
+                         testclass="ConfigTestElement"
+                         testname="HTTP Request Defaults (Global)"
+                         enabled="true">
+        <stringProp name="TestPlan.comments">
+          Cấu hình mặc định HTTP cho toàn bộ test plan.
+          Tất cả HTTP Sampler sẽ kế thừa host/port/path từ đây nếu không override.
+        </stringProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
+        <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">http</stringProp>
+        <stringProp name="HTTPSampler.path">${BASE_PATH}</stringProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <intProp name="HTTPSampler.connect_timeout">5000</intProp>
+        <intProp name="HTTPSampler.response_timeout">10000</intProp>
+      </ConfigTestElement>
+      <hashTree/>
+
+      <!-- HTTP Cookie Manager – dùng để giữ session sau login -->
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager"
+                     testname="HTTP Cookie Manager" enabled="true">
+        <stringProp name="TestPlan.comments">
+          Tự động quản lý cookie phiên đăng nhập (session token / JWT cookie).
+          Mỗi thread giữ cookie riêng, mô phỏng người dùng độc lập.
+        </stringProp>
+        <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+      </CookieManager>
+      <hashTree/>
+
+      <!-- ────────────────────────────────────────────────────────
+           TG-01 | ĐĂNG NHẬP ĐỒNG THỜI
+           ID nhóm : PERF-WEB-TG01
+           Mục đích: Mô phỏng 30 người dùng đăng nhập cùng lúc,
+                     đo response time và tỉ lệ lỗi của endpoint login.
+           Kịch bản: Load test – 30 threads, ramp 10s, lặp 5 lần.
+           ──────────────────────────────────────────────────────── -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup"
+                   testname="TG-01 | Đăng nhập đồng thời (30 users)"
+                   enabled="true">
+        <stringProp name="TestPlan.comments">
+          PERF-WEB-TG01 – Kiểm tra khả năng xử lý đăng nhập đồng thời.
+          Mô phỏng giờ cao điểm sáng sớm khi nhiều bác sĩ / admin đăng nhập.
+        </stringProp>
+        <intProp name="ThreadGroup.num_threads">30</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <intProp name="ThreadGroup.num_threads">30</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+                     guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">5</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- PERF-WEB-TC01 | Đăng nhập với tài khoản admin hợp lệ -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC01 | POST /login – Admin hợp lệ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC01
+            Chức năng: Gửi POST login với email/password admin hợp lệ.
+            Kiểm tra : Response time &lt; 2000ms; HTTP 200/302; token/session được tạo.
+            Liên quan: W-F-01-TC01 (Selenium – đăng nhập thành công)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/login</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="email" elementType="HTTPArgument">
+                <stringProp name="Argument.name">email</stringProp>
+                <stringProp name="Argument.value">${ADMIN_EMAIL}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <stringProp name="Argument.name">password</stringProp>
+                <stringProp name="Argument.value">${ADMIN_PASSWORD}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion"
+                             testname="Assert: Login thành công (200/302)"
+                             enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+              <stringProp name="49587">302</stringProp>
+            </collectionProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms"
+                             enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC02 | Đăng nhập với tài khoản bác sĩ -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC02 | POST /login – Doctor role"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC02
+            Chức năng: Đăng nhập với tài khoản bác sĩ để kiểm tra redirect đúng role.
+            Kiểm tra : Response time &lt; 2000ms; chuyển hướng tới dashboard bác sĩ.
+            Liên quan: W-F-01-TC07 (Kiểm tra chuyển hướng đúng vai trò – Bác sĩ)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/login</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="email" elementType="HTTPArgument">
+                <stringProp name="Argument.name">email</stringProp>
+                <stringProp name="Argument.value">${DOCTOR_EMAIL}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <stringProp name="Argument.name">password</stringProp>
+                <stringProp name="Argument.value">123456</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms"
+                             enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC03 | Đăng nhập sai mật khẩu – đo xử lý lỗi dưới tải -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC03 | POST /login – Sai mật khẩu (stress)"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC03
+            Chức năng: Gửi đăng nhập sai mật khẩu dưới tải cao.
+                       Kiểm tra server không bị quá tải khi xử lý lỗi xác thực liên tục.
+            Kiểm tra : HTTP 200 (trang lỗi); response time &lt; 3000ms; không có 500 error.
+            Liên quan: W-F-01-TC02 (Đăng nhập với mật khẩu sai)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/login</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="email" elementType="HTTPArgument">
+                <stringProp name="Argument.name">email</stringProp>
+                <stringProp name="Argument.value">${ADMIN_EMAIL}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <stringProp name="Argument.name">password</stringProp>
+                <stringProp name="Argument.value">wrong_password_123</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion"
+                             testname="Assert: Không có lỗi 500"
+                             enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49588">500</stringProp>
+            </collectionProp>
+            <intProp name="Assertion.test_type">6</intProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree><!-- end TG-01 -->
+
+      <!-- ────────────────────────────────────────────────────────
+           TG-02 | DASHBOARD & DANH SÁCH (READ HEAVY)
+           ID nhóm : PERF-WEB-TG02
+           Mục đích: Mô phỏng 20 người dùng đồng thời truy cập các trang
+                     đọc (dashboard, danh sách). Đây là traffic phổ biến nhất.
+           Kịch bản: Load test – 20 threads, ramp 20s, lặp 10 lần.
+           ──────────────────────────────────────────────────────── -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup"
+                   testname="TG-02 | Dashboard &amp; Danh sách (20 users)"
+                   enabled="true">
+        <stringProp name="TestPlan.comments">
+          PERF-WEB-TG02 – Kiểm tra hiệu năng tải trang đọc dữ liệu.
+          Mô phỏng nhiều người dùng xem dashboard, danh sách bác sĩ, bệnh nhân cùng lúc.
+        </stringProp>
+        <intProp name="ThreadGroup.num_threads">20</intProp>
+        <intProp name="ThreadGroup.ramp_time">20</intProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+                     guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">10</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- PERF-WEB-TC04 | Tải trang Dashboard -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC04 | GET /dashboard – Tải trang chính"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC04
+            Chức năng: Đo thời gian tải trang Dashboard (số liệu tổng hợp, biểu đồ 7 ngày).
+                       Dashboard aggregate nhiều query DB (bác sĩ, bệnh nhân, lịch hôm nay).
+            Kiểm tra : HTTP 200; response time &lt; 3000ms; body chứa dữ liệu thống kê.
+            Liên quan: W-F-17-TC01, W-F-17-TC02
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/dashboard</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion"
+                             testname="Assert: HTTP 200" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC05 | Tải trang danh sách Bác sĩ -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC05 | GET /doctors – Danh sách bác sĩ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC05
+            Chức năng: Tải trang quản lý bác sĩ với phân trang.
+                       Kiểm tra tốc độ render danh sách có join với bảng chuyên khoa.
+            Kiểm tra : HTTP 200; response time &lt; 2000ms.
+            Liên quan: W-F-12-TC01 đến W-F-12-TC08
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/doctors</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC06 | Tìm kiếm bác sĩ -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC06 | GET /doctors?search= – Tìm kiếm bác sĩ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC06
+            Chức năng: Tìm kiếm bác sĩ theo tên. Kiểm tra hiệu năng query LIKE trên DB
+                       khi nhiều người cùng tìm kiếm cùng lúc.
+            Kiểm tra : HTTP 200; response time &lt; 2500ms.
+            Liên quan: W-F-12-TC05 (Tìm kiếm bác sĩ – FAIL trên Selenium)
+                       → Đây là điểm yếu, cần đo đặc biệt kỹ.
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/doctors</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="search" elementType="HTTPArgument">
+                <stringProp name="Argument.name">search</stringProp>
+                <stringProp name="Argument.value">Nguyen</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="sort_by" elementType="HTTPArgument">
+                <stringProp name="Argument.name">sort_by</stringProp>
+                <stringProp name="Argument.value">name</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="sort_dir" elementType="HTTPArgument">
+                <stringProp name="Argument.name">sort_dir</stringProp>
+                <stringProp name="Argument.value">asc</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2500ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2500</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC07 | Danh sách bệnh nhân -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC07 | GET /patients – Danh sách bệnh nhân"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC07
+            Chức năng: Tải danh sách bệnh nhân. Bảng bệnh nhân có thể lớn theo thời gian,
+                       cần kiểm tra hiệu năng phân trang và query.
+            Kiểm tra : HTTP 200; response time &lt; 2000ms.
+            Liên quan: W-F-14-TC01, W-F-14-TC06
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/patients</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC08 | Danh sách lịch hẹn -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC08 | GET /appointments – Danh sách lịch hẹn"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC08
+            Chức năng: Tải trang quản lý lịch hẹn. Trang này JOIN nhiều bảng
+                       (bệnh nhân, bác sĩ, chuyên khoa, trạng thái).
+            Kiểm tra : HTTP 200; response time &lt; 3000ms.
+            Liên quan: W-F-09-TC01, W-F-09-TC03
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/appointments</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC09 | Danh sách Chuyên khoa -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC09 | GET /specialities – Danh sách chuyên khoa"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC09
+            Chức năng: Tải danh sách chuyên khoa. Đây là dữ liệu master, được đọc nhiều.
+                       Kiểm tra xem có cần cache không (thường ít thay đổi).
+            Kiểm tra : HTTP 200; response time &lt; 1500ms (nên nhanh hơn).
+            Liên quan: W-F-13-TC05, W-F-13-TC07
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/specialities</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 1500ms" enabled="true">
+            <longProp name="DurationAssertion.duration">1500</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC10 | Danh sách Phòng khám -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC10 | GET /clinics – Danh sách phòng khám"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC10
+            Chức năng: Tải danh sách phòng khám. Dữ liệu master, ít thay đổi.
+            Kiểm tra : HTTP 200; response time &lt; 1500ms.
+            Liên quan: W-F-15-TC01, W-F-15-TC07
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/clinics</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 1500ms" enabled="true">
+            <longProp name="DurationAssertion.duration">1500</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree><!-- end TG-02 -->
+
+      <!-- ────────────────────────────────────────────────────────
+           TG-03 | QUẢN LÝ CHUYÊN KHOA – CRUD
+           ID nhóm : PERF-WEB-TG03
+           Mục đích: Kiểm tra hiệu năng create/update/delete chuyên khoa.
+                     Là dữ liệu master, ít write nhưng phải đúng.
+           Kịch bản: 10 threads, ramp 10s, lặp 3 lần.
+           ──────────────────────────────────────────────────────── -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup"
+                   testname="TG-03 | Quản lý Chuyên khoa CRUD (10 users)"
+                   enabled="true">
+        <stringProp name="TestPlan.comments">
+          PERF-WEB-TG03 – Kiểm tra CRUD Chuyên khoa dưới tải concurrent.
+          Phát hiện race condition hoặc deadlock khi nhiều admin sửa cùng lúc.
+        </stringProp>
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+                     guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">3</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- PERF-WEB-TC11 | Tạo chuyên khoa mới -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC11 | POST /specialities – Tạo chuyên khoa"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC11
+            Chức năng: Gửi request tạo mới chuyên khoa. Kiểm tra write performance,
+                       transaction isolation và không bị duplicate khi concurrent insert.
+            Kiểm tra : HTTP 200/201/302; response time &lt; 2000ms; không lỗi DB.
+            Liên quan: W-F-13-TC01 (Tạo chuyên khoa mới hợp lệ – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/specialities/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="name" elementType="HTTPArgument">
+                <stringProp name="Argument.name">name</stringProp>
+                <stringProp name="Argument.value">Chuyên khoa Test ${__threadNum}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="description" elementType="HTTPArgument">
+                <stringProp name="Argument.name">description</stringProp>
+                <stringProp name="Argument.value">Mô tả tự động JMeter thread ${__threadNum}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC12 | Cập nhật chuyên khoa -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC12 | POST /specialities/1/edit – Cập nhật"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC12
+            Chức năng: Cập nhật thông tin chuyên khoa ID=1. Kiểm tra UPDATE performance.
+                       Lưu ý: W-F-13-TC02 FAIL vì form description bị reset → cần monitor.
+            Kiểm tra : HTTP 200/302; response time &lt; 2000ms.
+            Liên quan: W-F-13-TC02 (Sửa chuyên khoa – FAIL)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/specialities/1/edit</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="name" elementType="HTTPArgument">
+                <stringProp name="Argument.name">name</stringProp>
+                <stringProp name="Argument.value">Nội tổng hợp (Updated)</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="description" elementType="HTTPArgument">
+                <stringProp name="Argument.name">description</stringProp>
+                <stringProp name="Argument.value">Khám bệnh nội khoa tổng quát</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC13 | Xóa chuyên khoa -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC13 | POST /specialities/delete – Xóa"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC13
+            Chức năng: Xóa chuyên khoa. Kiểm tra DELETE có kiểm tra FK constraint không
+                       (chuyên khoa đang được dùng bởi bác sĩ không nên xóa được).
+                       Đo thời gian xử lý constraint check.
+            Kiểm tra : HTTP 200/302; response time &lt; 2000ms; không lỗi 500.
+            Liên quan: W-F-13-TC03 (Xóa chuyên khoa – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/specialities/delete</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">id</stringProp>
+                <stringProp name="Argument.value">99</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion"
+                             testname="Assert: Không có lỗi 500" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49588">500</stringProp>
+            </collectionProp>
+            <intProp name="Assertion.test_type">6</intProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree><!-- end TG-03 -->
+
+      <!-- ────────────────────────────────────────────────────────
+           TG-04 | QUẢN LÝ BÁC SĨ – CRUD + SEARCH
+           ID nhóm : PERF-WEB-TG04
+           Mục đích: Kiểm tra hiệu năng CRUD bác sĩ.
+                     Bác sĩ liên quan nhiều bảng (chuyên khoa, phòng khám, tài khoản).
+           Kịch bản: 10 threads, ramp 10s, lặp 3 lần.
+           ──────────────────────────────────────────────────────── -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup"
+                   testname="TG-04 | Quản lý Bác sĩ CRUD (10 users)"
+                   enabled="true">
+        <stringProp name="TestPlan.comments">
+          PERF-WEB-TG04 – Kiểm tra hiệu năng tạo, sửa bác sĩ.
+          Tạo bác sĩ liên quan đến tạo account + doctor record → nhiều DB operation.
+        </stringProp>
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+                     guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">3</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- PERF-WEB-TC14 | Tạo tài khoản bác sĩ mới -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC14 | POST /doctors/create – Tạo bác sĩ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC14
+            Chức năng: Tạo tài khoản bác sĩ mới. Đây là operation phức tạp:
+                       tạo user account + doctor profile trong 1 transaction.
+                       Kiểm tra throughput khi nhiều admin tạo bác sĩ cùng lúc.
+            Kiểm tra : HTTP 200/201/302; response time &lt; 3000ms; không lỗi DB.
+            Liên quan: W-F-12-TC01 (Tạo tài khoản bác sĩ – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/doctors/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="name" elementType="HTTPArgument">
+                <stringProp name="Argument.name">name</stringProp>
+                <stringProp name="Argument.value">BS. JMeter Test ${__threadNum}_${__Random(1,9999)}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="email" elementType="HTTPArgument">
+                <stringProp name="Argument.name">email</stringProp>
+                <stringProp name="Argument.value">jmeter_doc_${__threadNum}_${__Random(1,9999)}@test.com</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="phone" elementType="HTTPArgument">
+                <stringProp name="Argument.name">phone</stringProp>
+                <stringProp name="Argument.value">037${__Random(1000000,9999999)}</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="speciality_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">speciality_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="clinic_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">clinic_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="price" elementType="HTTPArgument">
+                <stringProp name="Argument.name">price</stringProp>
+                <stringProp name="Argument.value">150000</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="status" elementType="HTTPArgument">
+                <stringProp name="Argument.name">status</stringProp>
+                <stringProp name="Argument.value">active</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC15 | Xem chi tiết bác sĩ -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC15 | GET /doctors/1 – Chi tiết bác sĩ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC15
+            Chức năng: Xem chi tiết bác sĩ. Trang này query JOIN users + doctors + specialities.
+                       W-F-12-TC08 FAIL vì bị duplicate → kiểm tra response size.
+            Kiểm tra : HTTP 200; response time &lt; 1500ms; response không quá lớn.
+            Liên quan: W-F-12-TC08 (Xem chi tiết bác sĩ – FAIL: trùng lặp)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/doctors/1</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 1500ms" enabled="true">
+            <longProp name="DurationAssertion.duration">1500</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree><!-- end TG-04 -->
+
+      <!-- ────────────────────────────────────────────────────────
+           TG-05 | LUỒNG ĐẶT LỊCH + LỊCH KHÁM (END-TO-END)
+           ID nhóm : PERF-WEB-TG05
+           Mục đích: Mô phỏng luồng nghiệp vụ hoàn chỉnh:
+                     xem lịch hẹn → tạo lịch khám → xem hàng đợi.
+                     Đây là luồng quan trọng nhất của hệ thống.
+           Kịch bản: 15 threads, ramp 15s, lặp 5 lần.
+           ──────────────────────────────────────────────────────── -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup"
+                   testname="TG-05 | Luồng Đặt lịch + Lịch khám (15 users)"
+                   enabled="true">
+        <stringProp name="TestPlan.comments">
+          PERF-WEB-TG05 – Kiểm tra luồng nghiệp vụ chính: từ lịch hẹn → lịch khám.
+          Mô phỏng giờ cao điểm buổi sáng khi hỗ trợ viên xử lý nhiều lịch hẹn cùng lúc.
+        </stringProp>
+        <intProp name="ThreadGroup.num_threads">15</intProp>
+        <intProp name="ThreadGroup.ramp_time">15</intProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController"
+                     guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">5</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- PERF-WEB-TC16 | Xem danh sách lịch hẹn đang xử lý -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC16 | GET /appointments?status=pending – Lọc trạng thái"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC16
+            Chức năng: Lọc lịch hẹn theo trạng thái "đang xử lý". Đây là thao tác
+                       hỗ trợ viên làm đầu tiên mỗi buổi sáng.
+            Kiểm tra : HTTP 200; response time &lt; 2500ms.
+            Liên quan: W-F-09-TC01, W-F-09-TC03
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/appointments</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="status" elementType="HTTPArgument">
+                <stringProp name="Argument.name">status</stringProp>
+                <stringProp name="Argument.value">pending</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="date" elementType="HTTPArgument">
+                <stringProp name="Argument.name">date</stringProp>
+                <stringProp name="Argument.value">2026-05-06</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2500ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2500</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC17 | Tạo lịch khám từ lịch hẹn (Phương thức 2) -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC17 | POST /schedules/create – Tạo lịch khám"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC17
+            Chức năng: Tạo lịch khám từ lịch hẹn (Phương thức 2 – Chỉ định bác sĩ).
+                       Đây là write operation quan trọng nhất: cập nhật appointment + tạo schedule.
+                       Cần kiểm tra transaction safety khi nhiều hỗ trợ viên xử lý cùng lúc.
+            Kiểm tra : HTTP 200/302; response time &lt; 3000ms; không race condition.
+            Liên quan: W-F-07-TC03 (Tạo lịch khám Phương thức 2 – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/schedules/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="appointment_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">appointment_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="speciality_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">speciality_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="doctor_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">doctor_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="date" elementType="HTTPArgument">
+                <stringProp name="Argument.name">date</stringProp>
+                <stringProp name="Argument.value">2026-05-06</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC18 | Xem hàng đợi lịch khám trong ngày -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC18 | GET /schedules/queue – Hàng đợi khám"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC18
+            Chức năng: Tải trang hàng đợi lịch khám trong ngày. Bác sĩ xem trang này
+                       liên tục trong suốt ca làm việc → cần response nhanh.
+            Kiểm tra : HTTP 200; response time &lt; 2000ms.
+            Liên quan: W-F-06-TC03 (Xem danh sách thứ tự lịch khám – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/schedules/queue</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 2000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">2000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC19 | Tạo phác đồ điều trị -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC19 | POST /treatments/create – Tạo phác đồ"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC19
+            Chức năng: Bác sĩ tạo phác đồ điều trị. Đây là write operation của bác sĩ,
+                       có thể xảy ra đồng thời khi nhiều bác sĩ khám song song.
+            Kiểm tra : HTTP 200/302; response time &lt; 3000ms.
+            Liên quan: W-F-10-TC01 (Tạo phác đồ điều trị – PASS)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/treatments/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="schedule_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">schedule_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="medicine_name" elementType="HTTPArgument">
+                <stringProp name="Argument.name">medicine_name</stringProp>
+                <stringProp name="Argument.value">Paracetamol</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="form" elementType="HTTPArgument">
+                <stringProp name="Argument.name">form</stringProp>
+                <stringProp name="Argument.value">Uống</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="times_per_day" elementType="HTTPArgument">
+                <stringProp name="Argument.name">times_per_day</stringProp>
+                <stringProp name="Argument.value">2</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="schedule_type" elementType="HTTPArgument">
+                <stringProp name="Argument.name">schedule_type</stringProp>
+                <stringProp name="Argument.value">Hàng ngày</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- PERF-WEB-TC20 | Viết bệnh án -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui"
+                          testclass="HTTPSamplerProxy"
+                          testname="PERF-WEB-TC20 | POST /medical-records/create – Viết bệnh án"
+                          enabled="true">
+          <stringProp name="TestPlan.comments">
+            ID       : PERF-WEB-TC20
+            Chức năng: Bác sĩ lưu bệnh án cho lịch khám. Sau khi lưu, app Android của
+                       bệnh nhân phải hiển thị được → kiểm tra write performance.
+                       Lưu ý: W-F-11-TC05 FAIL vì lỗi SQLSTATE[22001] khi nội dung dài.
+            Kiểm tra : HTTP 200/302; response time &lt; 3000ms; không lỗi DB truncation.
+            Liên quan: W-F-11-TC01 (Viết bệnh án – PASS), W-F-11-TC05 (FAIL)
+          </stringProp>
+          <stringProp name="HTTPSampler.path">${BASE_PATH}/medical-records/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="schedule_id" elementType="HTTPArgument">
+                <stringProp name="Argument.name">schedule_id</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              </elementProp>
+              <elementProp name="status_before" elementType="HTTPArgument">
+                <stringProp name="Argument.name">status_before</stringProp>
+                <stringProp name="Argument.value">Bệnh nhân mệt mỏi, sốt nhẹ 37.5 độ</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="status_after" elementType="HTTPArgument">
+                <stringProp name="Argument.name">status_after</stringProp>
+                <stringProp name="Argument.value">Bệnh nhân ổn định sau khám</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="reason" elementType="HTTPArgument">
+                <stringProp name="Argument.name">reason</stringProp>
+                <stringProp name="Argument.value">Cảm cúm thông thường</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+              <elementProp name="description" elementType="HTTPArgument">
+                <stringProp name="Argument.name">description</stringProp>
+                <stringProp name="Argument.value">Nghỉ ngơi, uống nhiều nước, tái khám sau 3 ngày</stringProp>
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <DurationAssertion guiclass="DurationAssertionGui"
+                             testclass="DurationAssertion"
+                             testname="Assert: Response time &lt; 3000ms" enabled="true">
+            <longProp name="DurationAssertion.duration">3000</longProp>
+          </DurationAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion"
+                             testname="Assert: Không có lỗi 500 (DB truncation)" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49588">500</stringProp>
+            </collectionProp>
+            <intProp name="Assertion.test_type">6</intProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree><!-- end TG-05 -->
+
+      <!-- ══════════════════════════════════════════════════════
+           LISTENERS – Thu thập kết quả
+           ══════════════════════════════════════════════════════ -->
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector"
+                       testname="[RESULT] Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+          </value>
+        </objProp>
+        <stringProp name="filename">web_summary_report.csv</stringProp>
+      </ResultCollector>
+      <hashTree/>
+
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector"
+                       testname="[RESULT] Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+          </value>
+        </objProp>
+        <stringProp name="filename">web_aggregate_report.csv</stringProp>
+      </ResultCollector>
+      <hashTree/>
+
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
